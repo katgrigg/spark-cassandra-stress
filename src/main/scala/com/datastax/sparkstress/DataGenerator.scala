@@ -12,6 +12,7 @@ import java.util.UUID
 
 object RowGenerator {
 
+  val DCS = Seq("west", "east", "north", "south", "northamerica", "southamerica", "africa", "europe", "asia", "earth", "mars", "venus", "saturn", "pluto", "jupiter")
   val METHODS = Seq("POST", "GET", "DELETE", "PUT")
   val TOPLEVELDOMAINS = Seq("home", "about", "island", "mirror", "store", "images", "gallery", "products", "streams") 
   val WORDS = Seq("apple", "banana", "orange", "kiwi", "lemon") 
@@ -31,6 +32,44 @@ object RowGenerator {
         queue.put(s"http://$ip:$port$uri")
       }
     }
+  }
+
+  def getTimeseriesRowRDD(sc: SparkContext, numPartitions: Int, numTotalRows: Long):
+  RDD[TimeseriesRowClass] = {
+    val opsPerPartition = numTotalRows / numPartitions
+
+    def generatePartition(index: Int) = {
+      val r = new scala.util.Random(index * System.currentTimeMillis())
+      val start = opsPerPartition*index
+      (0L until opsPerPartition).map { i =>
+        new TimeseriesRowClass(
+          UUIDs.timeBased(),
+          UUIDs.unixTimestamp(UUIDs.timeBased()) / 10000L,
+          DCS(r.nextInt(DCS.length)),
+          "rack".concat(r.nextInt.toString),
+          "host".concat(r.nextInt.toString),
+          r.nextString(20),
+          r.nextString(20),
+          r.nextString(20),
+          r.nextString(20),
+          r.nextString(20),
+          r.nextInt,
+          r.nextInt,
+          r.nextLong, 
+          r.nextLong, 
+          r.nextDouble, 
+          r.nextDouble, 
+          UUIDs.timeBased()
+        )
+      }.iterator
+    }
+
+    sc.parallelize(Seq[Int](), numPartitions).mapPartitionsWithIndex {
+      case (index, n) => {
+        generatePartition(index)
+      }
+    }
+
   }
 
   def getTimelineRowRDD(sc: SparkContext, numPartitions: Int, numTotalRows: Long):

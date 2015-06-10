@@ -8,6 +8,7 @@ import com.datastax.spark.connector._
 
 object WriteTask {
   val ValidTasks = Set(
+    "writetimeseriesrow",
     "writetimelinerow",
     "writeshortrow",
     "writeperfrow",
@@ -51,6 +52,47 @@ abstract class WriteTask( var config: Config, val sc: SparkContext) extends Stre
   }
 
 
+}
+
+/**
+ * Writes data to timeseries table. 
+ */
+class WriteTimeseriesRow(config: Config, sc: SparkContext) extends WriteTask(config, sc) {
+
+  def getTableCql(tbName: String): String =
+    s"""CREATE TABLE IF NOT EXISTS $tbName (
+       |id uuid,
+       |station_id bigint,
+       |dc text,
+       |rack text,
+       |host text,
+       |ascii0 ascii,
+       |ascii1 ascii,
+       |ascii2 ascii,
+       |ascii3 ascii,
+       |ascii4 ascii,
+       |int0 int,
+       |int1 int,
+       |bigint0 bigint,
+       |bigint1 bigint,
+       |double0 float,
+       |double1 float,
+       |ts timestamp,
+       |PRIMARY KEY ((id, station_id), dc, rack))
+       |WITH compaction = {'class': 'DateTieredCompactionStrategy'};""".stripMargin
+    
+  def getRDD: RDD[TimeseriesRowClass] = {
+    println(
+      s"""Generating RDD for timeseries rows:
+         |${config.totalOps} Total Writes
+         |${config.numPartitions} Num Partitions""".stripMargin
+    )
+    RowGenerator.getTimeseriesRowRDD(sc, config.numPartitions, config.totalOps)
+  }
+
+  def run(): Unit = {
+    getRDD.saveToCassandra(config.keyspace, config.table)
+  }
 }
 
 /**
