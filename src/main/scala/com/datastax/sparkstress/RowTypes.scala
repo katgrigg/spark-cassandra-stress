@@ -14,7 +14,7 @@ object RowTypes {
   
   case class TimeseriesRowClass( id: UUID, station_id: Long, dc: String, rack: String, host: String,
                                  ascii0: String, ascii1: String, ascii2: String, ascii3: String, ascii4: String,
-                                 int0: Int, int1: Int, bigint0: Long, bigint1: Long, double0: Double, double1: Double, ts: UUID) extends StressRow 
+                                 int0: Int, int1: Int, bigint0: Long, bigint1: Long, double0: Double, double1: Double, ts: Long) extends StressRow 
 
   case class WideRowClass(key: Long, col1: String, col2: String, col3: String) extends StressRow
 

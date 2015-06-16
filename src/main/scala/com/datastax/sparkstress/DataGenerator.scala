@@ -48,18 +48,19 @@ object RowGenerator {
           DCS(r.nextInt(DCS.length)),
           "rack".concat(r.nextInt.toString),
           "host".concat(r.nextInt.toString),
-          r.nextString(20),
-          r.nextString(20),
-          r.nextString(20),
-          r.nextString(20),
-          r.nextString(20),
+          WORDS(r.nextInt(WORDS.length)),
+          HEADERS(r.nextInt(HEADERS.length)),
+          TOPLEVELDOMAINS(r.nextInt(TOPLEVELDOMAINS.length)),
+          WORDS(r.nextInt(WORDS.length)),
+          DCS(r.nextInt(DCS.length)),
           r.nextInt,
           r.nextInt,
           r.nextLong, 
           r.nextLong, 
           r.nextDouble, 
           r.nextDouble, 
-          UUIDs.timeBased()
+          UUIDs.unixTimestamp(UUIDs.timeBased())
+          //UUIDs.timeBased()
         )
       }.iterator
     }
